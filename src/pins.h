@@ -1,0 +1,10 @@
+#define RESCUE_PIN 32
+#define STATUS_LED_PIN 12
+#define TX_LED_PIN 14
+
+#define RF433_PIN 18
+
+#define TX_LED_PIN27 27
+#define TX_LED_PIN26 26
+#define BUTTON1_PIN34 34
+#define BUTTON2_PIN35 35

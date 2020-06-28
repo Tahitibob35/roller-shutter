@@ -339,6 +339,7 @@ void handlePrgmList() {
   snprintf(page, 2000,"%s%s<header class=\"w3-container w3-card w3-theme\">\
   <h1>Programmes</h1>\
 </header>\
+<div class=\"w3-container\">\
 <br/>\
 <a href=\"prgmadd\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Nouveau</a>\
 <br/>\
@@ -360,7 +361,7 @@ void handlePrgmList() {
      }
     
   }
-  snprintf(page, 2000,"%s</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/>%s", page, FOOTER);
+  snprintf(page, 2000,"%s</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/></div>%s", page, FOOTER);
         
   server.send(200, "text/html", page);
 }
@@ -413,6 +414,7 @@ void handlePrgmAdd() {
   snprintf(page, 2500,"%s<header class=\"w3-container w3-card w3-theme\">\
   <h1>Nouveau</h1>\
 </header>\
+<div class=\"w3-container\">\
 <br/>\
       <form action=\"prgmadd\" method=\"post\">\
       <div class=\"form-group\">\
@@ -459,7 +461,7 @@ void handlePrgmAdd() {
     </form><br/>\
     <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </a>\
-<br/>%s", HEADER, FOOTER);
+<br/></div>%s", HEADER, FOOTER);
 
   server.send(200, "text/html", page);
 }

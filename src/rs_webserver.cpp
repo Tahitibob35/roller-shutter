@@ -106,7 +106,7 @@ void handleClock() {
   Serial.println(hours);
 
   snprintf(page, 2000,"%s<header class=\"w3-container w3-card w3-theme\">\
-<h1>Clock</h1>\
+<h1>Horloge</h1>\
 </header>\
 <div class=\"w3-container\">\
 <form action=\"clock\" method=\"post\">\

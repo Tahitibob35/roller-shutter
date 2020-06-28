@@ -1,5 +1,5 @@
 # roller-shutter
-Somfy roller shutter controled by an ESP32
+Somfy roller shutter controlled by an ESP32
 
 
 * Main page

@@ -19,6 +19,15 @@ Set your wifi credentials in the wifi page and restart the ESP32.
 
 * Configuration page URL : http://X.X.X.X/config
 
+## Attach a roller shutter
+
+![](/images/somfy-rts.jpg)
+
+Press the "Prog" button 3 seconds
+
+Go to the "Attacher" page and click on the desired roller shutter
+
+
 ## Screenshots
 
 * Main page

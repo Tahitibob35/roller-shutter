@@ -2,6 +2,7 @@
 
 #include "prgm.h"
 #include "prefs.h"
+#include "misc.h"
 
 
 extern prgm_t * prgms;
@@ -77,7 +78,6 @@ void checkprgms(int cur_h, int cur_m) {
   uint8_t hour = 0;
   uint8_t minute = 0;
   uint8_t command = 0;
-  uint8_t result = 0;
 
   /*Serial.print("PRGM - checkprgms - Current hour : ");
   Serial.println(cur_h);
@@ -97,10 +97,12 @@ void checkprgms(int cur_h, int cur_m) {
         Serial.println(i);
         if (command==0) {
           Serial.println("PRGM - checkprgms - Closing ");
+          movedown(roller);
         }
         else if (command==1)
         {
           Serial.println("PRGM - checkprgms - Opening ");
+          moveup(roller);
         }    
       }
     }

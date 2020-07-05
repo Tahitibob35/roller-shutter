@@ -51,11 +51,6 @@ void setup() {
 
   uint8_t hour=0;
   uint8_t minute=0;
-  delprgm(0);
-  delprgm(1);
-  gettime(&hour, &minute);
-  addprgm(0,hour, minute+1, 0);
-  addprgm(0,hour, minute+2, 1);
   
   prefs_loadprgms();
   

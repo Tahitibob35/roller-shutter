@@ -54,3 +54,13 @@ Go to the "Attacher" page and click on the desired roller shutter
 * Schema
 
 ![](/images/schema.png)
+
+## Photos
+
+![](/images/pcb_composants.jpg)
+
+![](/images/pcb_pistes.jpg)
+
+![](/images/pcb_dans_boitier.jpg)
+
+![](/images/boitier_ferme.jpg)

@@ -48,9 +48,6 @@ void setup() {
   }
   
   ws_config(rescue_mode);
-
-  uint8_t hour=0;
-  uint8_t minute=0;
   
   prefs_loadprgms();
   

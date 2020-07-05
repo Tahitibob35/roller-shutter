@@ -8,6 +8,7 @@
 #include "rs_time.h"
 #include "pins.h"
 #include "misc.h"
+#include "esp32-hal-cpu.h"
 
 int rescue_mode = 0;
 const long interval = 2000;
@@ -20,6 +21,11 @@ void setup() {
   
   Serial.begin(115200);
   Serial.println("\n\n\n** Boot in progress....");
+
+  setCpuFrequencyMhz(80);
+  int cpuSpeed = getCpuFrequencyMhz();
+  Serial.print("CPU Frequency :");
+  Serial.println(cpuSpeed);
 
   pinMode(RESCUE_PIN, INPUT);
   pinMode(STATUS_LED_PIN, OUTPUT);

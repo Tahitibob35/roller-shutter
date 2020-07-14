@@ -98,6 +98,7 @@ void checkprgms(int cur_h, int cur_m) {
         if (command==0) {
           Serial.println("PRGM - checkprgms - Closing ");
           movedown(roller);
+
         }
         else if (command==1)
         {
@@ -105,6 +106,7 @@ void checkprgms(int cur_h, int cur_m) {
           moveup(roller);
         }    
       }
+      delay(3000);
     }
   }
 

@@ -62,6 +62,7 @@ void loop() {
   // Handle web requests
   ws_handle_client();
 
+  //Cause a reboot in softAP mode
   if (rescue_mode) {
     handle_dns_requests();
   }
@@ -73,7 +74,7 @@ void loop() {
 
     if (time_set) {
   
-    unsigned long currentMillis = millis();
+      unsigned long currentMillis = millis();
 
       if (currentMillis - previousMillis >= interval) {
         previousMillis = currentMillis;
@@ -89,5 +90,8 @@ void loop() {
       }
     }
   }
+
+
+  
   
 }

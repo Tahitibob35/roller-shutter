@@ -255,39 +255,47 @@ void handleCommand() {
       Serial.println(roller);
       moveup(roller);
     }
+    else if (command == 2) {
+      Serial.print("WEBSERVER - handleCommand - Stop roller : ");
+      Serial.println(roller);
+      stop(roller);
+    }
     
     redirect((char*)"/command");
     return;
   }
 
-  char page[2000];
+  char page[2200];
 
-  snprintf(page, 2000,"%s<div>\
+  snprintf(page, 2200,"%s<div>\
 <table  class=\"w3-table\">\
 <tr>\
-<td colspan=\"2\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Cusine</h1>\
+<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
+  <h1>Cuisine</h1>\
 </header></td>\
 </tr>\
 <tr>\
 <td><a href=\"command?roller=0&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
+<td><a href=\"command?roller=0&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=0&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr>\
 <tr>\
-<td colspan=\"2\"><header class=\"w3-container w3-card w3-theme\">\
+<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
   <h1>Salle &agrave; manger</h1>\
 </header></td>\
 </tr>\
 <tr>\
 <td><a href=\"command?roller=1&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
+<td><a href=\"command?roller=1&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=1&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr><tr>\
-<td colspan=\"2\"><header class=\"w3-container w3-card w3-theme\">\
+<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
   <h1>Salon</h1>\
 </header></td>\
 </tr>\
 <tr>\
 <td><a href=\"command?roller=2&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
+<td><a href=\"command?roller=2&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=2&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr>\
 </table>\

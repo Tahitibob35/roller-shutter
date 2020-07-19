@@ -7,5 +7,6 @@ void wifiblink(void);
 void moveup(int roller);
 void movedown(int roller);
 void prog(int roller);
+void stop(int roller);
 
 #endif //MISC_H_

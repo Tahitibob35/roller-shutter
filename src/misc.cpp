@@ -58,3 +58,13 @@ void prog(int roller) {
   digitalWrite(TX_LED_PIN, LOW);
   
 }
+
+
+void stop(int roller) {
+
+  digitalWrite(TX_LED_PIN, HIGH);
+  somfy.stop(roller);
+  delay(500);
+  digitalWrite(TX_LED_PIN, LOW);
+  
+}

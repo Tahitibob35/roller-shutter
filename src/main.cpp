@@ -34,7 +34,7 @@ void setup() {
   digitalWrite(STATUS_LED_PIN, HIGH);
 
   rescue_mode = digitalRead(RESCUE_PIN);
-  rescue_mode = 1;
+  
   Serial.println(rescue_mode);
   if (rescue_mode) {
     start_softap();    

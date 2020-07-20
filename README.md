@@ -15,6 +15,10 @@ Somfy roller shutter controlled by an ESP32
 
 ![](/images/oscillator.jpg)
 
+### Somfy RTS module
+
+![](/images/somfy-rts.jpg)
+
 ## First run or rescue mode
 
 Keep pressed on the rescue button (pin 14) and press the ESP32 reset button.

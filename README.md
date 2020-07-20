@@ -25,7 +25,7 @@ The ESP32 start in rescue mode as an access point.
 
 * Default IP : 10.10.10.1
 
-Configuration URL : http://192.168.1.64/config
+Configuration URL : http://roller/config
 
 Set your wifi credentials in the wifi page and restart the ESP32.
 

@@ -276,7 +276,7 @@ void handleCommand() {
 </tr>\
 <tr>\
 <td><a href=\"command?roller=0&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=0&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
+<td><a href=\"command?roller=0&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=0&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr>\
 <tr>\
@@ -286,7 +286,7 @@ void handleCommand() {
 </tr>\
 <tr>\
 <td><a href=\"command?roller=1&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=1&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
+<td><a href=\"command?roller=1&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=1&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr><tr>\
 <td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
@@ -295,7 +295,7 @@ void handleCommand() {
 </tr>\
 <tr>\
 <td><a href=\"command?roller=2&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=2&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#9634;</span></a></td>\
+<td><a href=\"command?roller=2&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=2&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr>\
 </table>\

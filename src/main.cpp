@@ -35,7 +35,6 @@ void setup() {
 
   rescue_mode = digitalRead(RESCUE_PIN);
   
-  Serial.println(rescue_mode);
   if (rescue_mode) {
     start_softap();    
   }

@@ -40,6 +40,7 @@ void start_softap(void) {
   
   Serial.println("WIFI - start_softap - Starting rescue mode");
   WiFi.mode(WIFI_AP);
+  delay(2000);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
   WiFi.softAP("VoletRoulants");
   dnsServer.start(53, "*", apIP);  //Cause a reboot in softAP mode

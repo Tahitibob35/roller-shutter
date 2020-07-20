@@ -9,11 +9,11 @@ Somfy roller shutter controlled by an ESP32
 
 ### RF433 module
 
-![](/images/rf433-module.png)
+![](/images/rf433-module.jpg)
 
 ### 433.42MHz oscillator
 
-![](/images/oscillator.png)
+![](/images/oscillator.jpg)
 
 ## First run or rescue mode
 

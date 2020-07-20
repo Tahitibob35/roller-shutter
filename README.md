@@ -1,6 +1,20 @@
 # roller-shutter
 Somfy roller shutter controlled by an ESP32
 
+## Materials
+
+### ESP32 from azdelivery
+
+![](/images/esp32.png)
+
+### RF433 module
+
+![](/images/rf433-module.png)
+
+### 433.42MHz oscillator
+
+![](/images/oscillator.png)
+
 ## First run or rescue mode
 
 Keep pressed on the rescue button (pin 14) and press the ESP32 reset button.

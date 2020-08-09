@@ -411,7 +411,9 @@ void handlePrgmAdd() {
     String command = server.arg("command");
     Serial.print("WEBSERVER - handlePrgmAdd - Command : ");
     Serial.println(command);
-    addprgm(roller.toInt(), hour.toInt(), minute.toInt(), command.toInt());
+
+    if (roller.length() != 0 && hour .length() != 0 && minute.length() != 0 && command.length() != 0)
+      addprgm(roller.toInt(), hour.toInt(), minute.toInt(), command.toInt());
     char url[40];
     get_obfuscated_url(url, key, (char*)"/prgmlist");
     server.sendHeader("Location", url, true);

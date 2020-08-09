@@ -4,7 +4,7 @@
 #include "Arduino.h"
 
 #define OPEN true
-#define PRGM_COUNT 10
+#define PRGM_COUNT 30
 
 typedef struct  {
   public:

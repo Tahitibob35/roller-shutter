@@ -1,7 +1,7 @@
 #ifndef RS_TIME_H_
 #define RS_TIME_H_
 
-void inittime(void);
+bool inittime(void);
 bool gettime(uint8_t * hours, uint8_t * minutes);
 bool settime(uint8_t hours, uint8_t minutes);
 

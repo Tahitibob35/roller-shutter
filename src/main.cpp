@@ -40,8 +40,7 @@ void setup() {
   }
   else {
     connect_to_wifi();
-    inittime();
-    if (gettime(&previous_hour, &previous_minute)) {
+    if (inittime()) {
       digitalWrite(STATUS_LED_PIN, LOW);
       time_set = true;
     }
@@ -72,7 +71,7 @@ void loop() {
 
     if (time_set) {
   
-    unsigned long currentMillis = millis();
+      unsigned long currentMillis = millis();
 
       if (currentMillis - previousMillis >= interval) {
         previousMillis = currentMillis;
@@ -85,6 +84,14 @@ void loop() {
             previous_minute = minute;
           }      
         }
+      }
+    }
+    else {
+      Serial.println("Main.Loop - Time not set, trying to get it...");
+      connect_to_wifi();
+      if (inittime()) {
+        digitalWrite(STATUS_LED_PIN, LOW);
+        time_set = true;
       }
     }
   }

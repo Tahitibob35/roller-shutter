@@ -9,21 +9,21 @@ const int   daylightOffset_sec = 3600;
 bool time_set = false;
 
 
-void inittime(void) {
+bool inittime(void) {
 
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
     Serial.println("Failed to obtain time");
-    return;
+    return false;
   }
 
   Serial.print("TIME - gettime - hour : ");
   Serial.println(timeinfo.tm_hour);
   Serial.print("TIME - gettime - minutes : ");
   Serial.println(timeinfo.tm_min);
-  
+  return true;
 }
 
 
@@ -52,9 +52,9 @@ bool settime(uint8_t hours, uint8_t minutes) {
 
   struct tm tm;
   tm.tm_year = 2017 - 1900;
-    tm.tm_mon = 11;
-    tm.tm_mday = 8;
-    tm.tm_sec = 10;
+  tm.tm_mon = 11;
+  tm.tm_mday = 8;
+  tm.tm_sec = 10;
   tm.tm_hour = hours + 1;
   tm.tm_min = minutes;
   tm.tm_sec = 0;

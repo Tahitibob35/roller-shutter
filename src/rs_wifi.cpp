@@ -36,6 +36,19 @@ void connect_to_wifi(void) {
   
 }
 
+/*void disconnect_from_wifi(void) {
+
+  Serial.println("WIFI - Disconnecting...");
+  
+  WiFi.stop();
+  while (WiFi.status() == WL_CONNECTED) 
+  {
+     delay(500);
+     Serial.print("*");
+  }
+  
+}*/
+
 void start_softap(void) {
   
   Serial.println("WIFI - start_softap - Starting rescue mode");

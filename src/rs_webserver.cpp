@@ -1,10 +1,9 @@
-
-
 #include "WebServer.h"
 
 #include "rs_webserver.h"
 #include "prgm.h"
 #include "prefs.h"
+#include "vars.h"
 #include "misc.h"
 #include "rs_time.h"
 #include "misc.h"
@@ -23,8 +22,18 @@ char HEADER[] = "<html>\
 
 char  FOOTER[] = "<br/></div></body></html>";
 
-
-
+const char *remote_name[REMOTES_COUNT] = { 
+  (char *)"Cuisine", 
+  (char *)"Baie vitr&eacute;e",
+  (char *)"Buffet",
+  (char *)"Porte fen&ecirc;tre",
+  (char *)"Bureau",
+  (char *)"Chambre 1",
+  (char *)"Chambre 2",
+  (char *)"Chambre 3",
+  (char *)"Tout bas",
+  (char *)"Tout haut",
+};
 
 void ws_handle_client(void) {
   
@@ -215,21 +224,24 @@ void handleAttach() {
     return;
   }
 
-  char page[2000];
+  int buffer_size=2000;
 
-  snprintf(page, 2000,"%s\
+  char page[buffer_size];
+
+  snprintf(page, buffer_size,"%s\
 <header class=\"w3-container w3-card w3-theme\">\
 <h1>Attacher</h1>\
 </header>\
 <div class=\"w3-container\">\
+<br/>", HEADER);
+// Loop on remotes
+for (size_t i = 0; i < REMOTES_COUNT; i++)
+{
+  snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"attach?roller=%d\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">%s</a>\
 <br/>\
-<a href=\"attach?roller=0\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Cuisine</a>\
-<br/>\
-<a href=\"attach?roller=1\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Salle &agrave; manger</a>\
-<br/>\
-<a href=\"attach?roller=2\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Salon</a>\
-<br/>\
-<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">retour</a>%s", HEADER, FOOTER);
+",i,remote_name[i]);
+}
+snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">retour</a>%s", FOOTER);
         
   server.send(200, "text/html", page);
   
@@ -265,44 +277,40 @@ void handleCommand() {
     return;
   }
 
-  char page[2200];
+  // Page as: 290 char for top + 626 char per REMOTE + 44 char for end
+  server.setContentLength(290 + 626 * REMOTES_COUNT + 44);
+  server.send(200, "text/html", "");
 
-  snprintf(page, 2200,"%s<div>\
+  int buffer_size=2000;
+  char page[buffer_size];
+  // 290 char
+  snprintf(page, buffer_size,"%s<div>\
 <table  class=\"w3-table\">\
-<tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Cuisine</h1>\
+",HEADER);
+  server.sendContent_P(page);
+
+// Loop on remotes 
+// 626 char per remote
+for (size_t i = 0; i < REMOTES_COUNT; i++)
+{
+  snprintf(page, buffer_size,
+  "<tr><td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
+<h1>%s</h1>\
 </header></td>\
 </tr>\
 <tr>\
-<td><a href=\"command?roller=0&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=0&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=0&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr>\
-<tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Salle &agrave; manger</h1>\
-</header></td>\
-</tr>\
-<tr>\
-<td><a href=\"command?roller=1&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=1&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=1&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr><tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Salon</h1>\
-</header></td>\
-</tr>\
-<tr>\
-<td><a href=\"command?roller=2&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=2&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=2&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr>\
-</table>\
+<td><a href=\"command?roller=%d&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
+<td><a href=\"command?roller=%d&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
+<td><a href=\"command?roller=%d&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
+</tr>",remote_name[i],i,i,i);
+  server.sendContent_P(page);
+}
+
+  // 44 char
+  snprintf(page, buffer_size, "</table>\
 </div>\
-<br/>%s", HEADER, FOOTER);
-        
-  server.send(200, "text/html", page);
+<br/>%s", FOOTER);
+server.sendContent_P(page);
   
 }
 

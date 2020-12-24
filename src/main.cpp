@@ -16,8 +16,10 @@ unsigned long previousMillis = 0;
 uint8_t previous_hour = 0;
 uint8_t previous_minute = 0;
 extern bool time_set;
+bool wifi_connected;
 
 void setup() {
+  wifi_connected =  false;
   
   Serial.begin(115200);
   Serial.println("\n\n\n** Boot in progress....");
@@ -32,6 +34,7 @@ void setup() {
   pinMode(TX_LED_PIN, OUTPUT);
 
   digitalWrite(STATUS_LED_PIN, HIGH);
+  digitalWrite(TX_LED_PIN, HIGH);
 
   rescue_mode = digitalRead(RESCUE_PIN);
   
@@ -49,7 +52,8 @@ void setup() {
   ws_config(rescue_mode);
   
   prefs_loadprgms();
-  
+  digitalWrite(TX_LED_PIN, LOW);
+
 }
 
 void loop() {
@@ -71,28 +75,28 @@ void loop() {
 
     if (time_set) {
   
-      unsigned long currentMillis = millis();
+        unsigned long currentMillis = millis();
 
-      if (currentMillis - previousMillis >= interval) {
-        previousMillis = currentMillis;
+        if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
 
-        if (gettime(&hour, &minute)) {
-          if (minute != previous_minute) {
-            //Serial.println("LOOP - Minute changed");
-            checkprgms(hour, minute);
-            previous_hour = hour;
-            previous_minute = minute;
-          }      
+          if (gettime(&hour, &minute)) {
+            if (minute != previous_minute) {
+              //Serial.println("LOOP - Minute changed");
+              checkprgms(hour, minute);
+              previous_hour = hour;
+              previous_minute = minute;
+            }      
+          }
         }
       }
-    }
-    else {
-      Serial.println("Main.Loop - Time not set, trying to get it...");
-      connect_to_wifi();
-      if (inittime()) {
-        digitalWrite(STATUS_LED_PIN, LOW);
-        time_set = true;
-      }
+      else {
+        Serial.println("Main.Loop - Time not set, trying to get it...");
+        connect_to_wifi();
+        if (inittime()) {
+          digitalWrite(STATUS_LED_PIN, LOW);
+          time_set = true;
+        }
     }
   }
   

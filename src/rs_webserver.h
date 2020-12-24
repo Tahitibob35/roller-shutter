@@ -9,4 +9,7 @@ void getcommandname(uint8_t command, char * name);
 void handlePrgmDelete(void);
 void redirect(char * url);
 
+#define REMOTES_COUNT 10
+#define MAX_STRING_SIZE 40
+
 #endif /* RS_WEBSERVER_H_ */

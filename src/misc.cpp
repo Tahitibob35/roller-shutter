@@ -7,27 +7,27 @@
 
 SomfyRTS somfy(RF433_PIN);
 
-void wifiblink(void) {
+// void wifiblink(void) {
 
-  const long interval = 500;
-  static unsigned long previousMillis = 0;
-  static int ledState = LOW;
+//   const long interval = 500;
+//   static unsigned long previousMillis = 0;
+//   static int ledState = LOW;
 
-  unsigned long currentMillis = millis();
+//   unsigned long currentMillis = millis();
 
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
+//   if (currentMillis - previousMillis >= interval) {
+//     previousMillis = currentMillis;
 
-    if (ledState == LOW) {
-      ledState = HIGH;
-    } else {
-      ledState = LOW;
-    }
+//     if (ledState == LOW) {
+//       ledState = HIGH;
+//     } else {
+//       ledState = LOW;
+//     }
 
-    digitalWrite(STATUS_LED_PIN, ledState);
-  }
+//     digitalWrite(STATUS_LED_PIN, ledState);
+//   }
 
-}
+// }
 
 
 void moveup(int roller) {

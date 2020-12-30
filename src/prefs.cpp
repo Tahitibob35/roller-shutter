@@ -26,6 +26,98 @@ void prefs_get_key(char * key) {
     
 }
 
+void prefs_set_token(String token) {
+  
+  Serial.println("PREFS - Storing token");
+  preferences.begin("token",false);
+  preferences.putString("token", token);
+  preferences.end();
+  
+}
+
+
+void prefs_get_token(char * token) {
+  
+  Serial.print("PREFS - Reading token : ");
+  preferences.begin("token",false);
+  preferences.getString("token").toCharArray(token, 16);
+  Serial.println(token);
+  preferences.end();
+    
+}
+
+void prefs_set_syslog_state(boolean syslog_state) {
+  
+  Serial.println("PREFS - Storing syslog state: " + syslog_state ? "true" : "false");
+  preferences.begin("syslog",false);
+  preferences.putBool("syslog_state", syslog_state);
+  preferences.end();
+  
+}
+
+
+boolean prefs_get_syslog_state() {
+  boolean syslog_state = false;
+
+  Serial.print("PREFS - Reading syslog state : ");
+  preferences.begin("syslog",false);
+  syslog_state = preferences.getBool("syslog_state");
+  preferences.end();
+  
+  if (syslog_state)
+  {
+    Serial.println("enabled");
+  }
+  else
+  {
+    Serial.println("disabled");
+  }
+  return syslog_state; 
+}
+
+
+void prefs_set_syslog_ip(String syslog_ip) {
+  
+  Serial.println("PREFS - Storing syslog ip");
+  preferences.begin("syslog",false);
+  preferences.putString("syslog_ip", syslog_ip);
+  preferences.end();
+  
+}
+
+
+void prefs_get_syslog_ip(char * syslog_ip) {
+  
+  Serial.print("PREFS - Reading syslog_ip : ");
+  preferences.begin("syslog",false);
+  preferences.getString("syslog_ip").toCharArray(syslog_ip, IP_LENGTH);
+  Serial.println(syslog_ip);
+  preferences.end();
+  
+}
+
+void prefs_set_syslog_port(int syslog_port) {
+  
+  Serial.println("PREFS - Storing syslog port");
+  preferences.begin("syslog",false);
+  preferences.putUShort("syslog_port", syslog_port);
+  preferences.end();
+  
+}
+
+
+uint16_t prefs_get_syslog_port() {
+  uint16_t value=-1;
+
+  Serial.print("PREFS - Reading syslog_port : ");
+  preferences.begin("syslog",false);
+  value = preferences.getUShort("syslog_port");
+
+  Serial.println(value);
+  preferences.end();
+
+  return value;  
+}
 
 void prefs_set_accesspoint(String accesspoint) {
   

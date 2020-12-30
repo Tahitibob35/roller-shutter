@@ -78,6 +78,7 @@ void setup() {
   }
   else {
     connect_to_wifi();
+    setup_syslog();
     checkWifiTask.enable();
     if (inittime()) {
       digitalWrite(STATUS_LED_PIN, LOW);
@@ -94,6 +95,7 @@ void setup() {
 
   digitalWrite(TX_LED_PIN, LOW);
 
+  write_output("End setup function");
 }
 
 void loop() {
@@ -105,10 +107,10 @@ void loop() {
   }else
   {
     if(!time_set) {
-      Serial.println("Main.Loop - Time not set, trying to get it...");
-      connect_to_wifi();
+      write_output("Main.Loop - Time not set, trying to get it...");
       if (inittime()) {
         digitalWrite(STATUS_LED_PIN, LOW);
+        write_output("Main.Loop - Time set");
         time_set = true;
       }
     }

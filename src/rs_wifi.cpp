@@ -1,11 +1,17 @@
 
 #include "WiFi.h"
 #include "rs_wifi.h"
-#include <DNSServer.h>
+#include "DNSServer.h"
 #include "prefs.h"
+#include "ESP32Ping.h"
+#include "misc.h"
 
 IPAddress apIP(10, 10, 10, 1);
 DNSServer dnsServer;
+// IP to ping
+IPAddress IPtoPing(8, 8, 8, 8);
+int pingThreshold = 2000;
+int failingWifi = 0;
 
 void connect_to_wifi(void) {
 
@@ -34,24 +40,40 @@ void connect_to_wifi(void) {
   Serial.print("WIFI IP Address : ");
   Serial.println(WiFi.localIP());
   
+  IPtoPing = WiFi.gatewayIP();
+  Serial.print("Gateway IP Address : ");
+  Serial.println(IPtoPing.toString());
 }
 
-/*void disconnect_from_wifi(void) {
+void check_wifi(void){
+  int avg_ms = 2000;
+  boolean ping_sucess = Ping.ping(IPtoPing, 9);
+  avg_ms = Ping.averageTime();
 
-  Serial.println("WIFI - Disconnecting...");
-  
-  WiFi.stop();
-  while (WiFi.status() == WL_CONNECTED) 
-  {
-     delay(500);
-     Serial.print("*");
+  write_output("ping:" + String(avg_ms) + "ms");
+
+  if(avg_ms < pingThreshold && ping_sucess){
+    failingWifi=0;
+  }else{
+    write_output("Connection Failed! Reconnecting...");
+    WiFi.reconnect();
+    delay(2000);
+    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      write_output("Connection failed again.");
+      failingWifi=failingWifi+1;
+      if (failingWifi>MAX_FAILING_WIFI){
+        write_output("ESP will restart now...");
+        delay(100);
+        ESP.restart();
+      }
+    }
+    write_output("Connection fails but reconnected :)");
   }
-  
-}*/
+}
 
 void start_softap(void) {
   
-  Serial.println("WIFI - start_softap - Starting rescue mode");
+  write_output("WIFI - start_softap - Starting rescue mode");
   WiFi.mode(WIFI_AP);
   delay(2000);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));

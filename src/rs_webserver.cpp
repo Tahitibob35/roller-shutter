@@ -1,15 +1,15 @@
-
-
 #include "WebServer.h"
 
 #include "rs_webserver.h"
 #include "prgm.h"
 #include "prefs.h"
+#include "vars.h"
 #include "misc.h"
 #include "rs_time.h"
 #include "misc.h"
 
 char key[10];
+char token[16]; // Token to validate API calls
 
 WebServer server(80);
 extern prgm_t prgms[PRGM_COUNT];
@@ -23,8 +23,18 @@ char HEADER[] = "<html>\
 
 char  FOOTER[] = "<br/></div></body></html>";
 
-
-
+const char *remote_name[REMOTES_COUNT] = { 
+  (char *)"Cuisine", 
+  (char *)"Baie vitr&eacute;e",
+  (char *)"Buffet",
+  (char *)"Porte fen&ecirc;tre",
+  (char *)"Bureau",
+  (char *)"Chambre 1",
+  (char *)"Chambre 2",
+  (char *)"Chambre 3",
+  (char *)"Tout bas",
+  (char *)"Tout haut",
+};
 
 void ws_handle_client(void) {
   
@@ -135,38 +145,90 @@ void handleApplication() {
 
   // GET Method
 
-  char page[2000];
+  char page[4000];
 
   if (server.method() == HTTP_POST) {
     String key = server.arg("key");
-    Serial.print("WEBSERVER - handleApplication - Storing key : ");
-    Serial.println(key);
-    prefs_set_key(key);
+    if(server.hasArg("key")){
+      write_output("WEBSERVER - handleApplication - Storing key : " + key);
+      prefs_set_key(key);
+    }
 
+    String token_arg = server.arg("token");
+    if(token_arg.length() > 0 ){
+      write_output("WEBSERVER - handleApplication - Storing token : " + token_arg);
+      prefs_set_token(token_arg);
+    }
+
+    String syslog_state = server.arg("syslog_state");
+    if(syslog_state.length() > 0 ){
+      write_output("WEBSERVER - handleApplication - Storing syslog_state : " + syslog_state);
+      if(syslog_state.compareTo("yes") == 0){
+        // syslog_state == "yes"
+        prefs_set_syslog_state(true);
+      }else{
+        // syslog_state != "yes
+        prefs_set_syslog_state(false);
+      }
+    }
+
+    String syslog_ip = server.arg("syslog_ip");
+    if(syslog_ip.length() > 0 ){
+      write_output("WEBSERVER - handleApplication - Storing syslog_ip : " + syslog_ip);
+      prefs_set_syslog_ip(syslog_ip);
+    }
+
+    String syslog_port = server.arg("syslog_port");
+    if(syslog_port.length() > 0 ){
+      write_output("WEBSERVER - handleApplication - Storing syslog_port : " + syslog_port);
+      prefs_set_syslog_port(syslog_port.toInt());
+    }
 
     redirect((char*)"/application");
     return;
-
   }
 
   char key_str[KEY_LENGTH];
   prefs_get_key(key_str);
+  prefs_get_token(token);
 
-  snprintf(page, 2000,"%s<header class=\"w3-container w3-card w3-theme\">\
+  boolean syslog_state = false;
+  char syslog_ip[IP_LENGTH];
+  int16_t syslog_port;
+  syslog_state = prefs_get_syslog_state();
+  prefs_get_syslog_ip(syslog_ip);
+  syslog_port = prefs_get_syslog_port();
+
+  snprintf(page, 4000,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Application</h1>\
 </header>\
 <div class=\"w3-container\">\
 <form action=\"application\" method=\"post\">\
 <p>\
-<label class=\"w3-text-teal w3-xxlarge\"><b>Cl&eacute;</b></label>\
-<input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" id=\"key\" name=\"key\" type=\"text\" value=\"%s\"></p>\
+  <label class=\"w3-text-teal w3-xxlarge\"><b>Cl&eacute;</b></label>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" id=\"key\" name=\"key\" type=\"text\" value=\"%s\"></p>\
 <p>\
+<p>\
+  <label class=\"w3-text-teal w3-xxlarge\"><b>Token</b></label>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" id=\"token\" name=\"token\" type=\"text\" value=\"%s\"></p>\
+<p>\
+<p>\
+  <label class=\"w3-text-teal w3-xxlarge\" for=\"fname\">Activer syslog externe:</label><br/>\
+  <input type=\"radio\" id=\"syslog_state\" name=\"syslog_state\" value=\"yes\" %s>\
+  <label class=\"w3-text-teal w3-xxlarge\" for=\"yes\">Oui</label><br/>\
+  <input type=\"radio\" id=\"syslog_state\" name=\"syslog_state\" value=\"no\" %s>\
+  <label class=\"w3-text-teal w3-xxlarge\" for=\"no\">Non</label><br/>\
+  <label for=\"syslog_ip\">Syslog serveur IP:</label><br/>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_ip\" name=\"syslog_ip\" value=\"%s\"><br/>\
+  <label for=\"syslog_port\">Syslog serveur port:</label><br/>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_port\" name=\"syslog_port\" value=\"%d\"><br/>\
+</p>\
 <input type=\"submit\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\" value=\"Enregistrer\">\
 </form>\
 <br/>\
 <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </button>\
-</a>%s", HEADER, key_str, FOOTER);
+</a>%s", HEADER, key_str, token, syslog_state ? "checked" : " ", syslog_state ? " " : "checked", syslog_ip, syslog_port, FOOTER);
 
   server.send(200, "text/html", page);
 }
@@ -215,94 +277,128 @@ void handleAttach() {
     return;
   }
 
-  char page[2000];
+  int buffer_size=2000;
 
-  snprintf(page, 2000,"%s\
+  char page[buffer_size];
+
+  snprintf(page, buffer_size,"%s\
 <header class=\"w3-container w3-card w3-theme\">\
 <h1>Attacher</h1>\
 </header>\
 <div class=\"w3-container\">\
+<br/>", HEADER);
+// Loop on remotes
+for (size_t i = 0; i < REMOTES_COUNT; i++)
+{
+  snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"attach?roller=%d\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">%s</a>\
 <br/>\
-<a href=\"attach?roller=0\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Cuisine</a>\
-<br/>\
-<a href=\"attach?roller=1\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Salle &agrave; manger</a>\
-<br/>\
-<a href=\"attach?roller=2\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Salon</a>\
-<br/>\
-<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">retour</a>%s", HEADER, FOOTER);
+",i,remote_name[i]);
+}
+snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">retour</a>%s", FOOTER);
         
   server.send(200, "text/html", page);
   
 }
 
 
+
+
+void handleApi() {
+  write_output("WEBSERVER - handleAPI - Serving API page");
+  String roller_str = server.arg("roller");
+  String command_str = server.arg("command");
+  String token_str = server.arg("token");
+
+  if (roller_str.length() > 0 && command_str.length() > 0 && token_str.length() > 0) {
+    int command = command_str.toInt();
+    int roller = roller_str.toInt();
+
+    if (token_str.compareTo(token) != 0){
+      write_output("WEBSERVER - handleAPI - wrong token: " + token_str);
+      server.send(401, "text/plain", "Unauthorized");
+    }else{
+      if (command == 0) {
+        write_output("WEBSERVER - handleAPI - Move down roller : " + String(roller));
+        server.send(200, "text/plain", "OK");
+        movedown(roller);
+        return;
+      }
+      else if (command == 1) {
+        write_output("WEBSERVER - handleAPI - Move up roller : " + String(roller));
+        server.send(200, "text/plain", "OK");
+        moveup(roller);
+        return;
+      }
+      else if (command == 2) {
+        write_output("WEBSERVER - handleAPI - Stop roller : " + String(roller));
+        server.send(200, "text/plain", "OK");
+        stop(roller);
+        return;
+      }
+    }
+  }
+}
+
 void handleCommand() {
   
-  Serial.println("WEBSERVER - handleCommand - Serving command page");
-
+  write_output("WEBSERVER - handleCommand - Serving command page");
+  
   String roller_str = server.arg("roller");
   String command_str = server.arg("command");
   if (roller_str.length() > 0 && command_str.length() > 0) {
     int roller = roller_str.toInt();
     int command = command_str.toInt();
     if (command == 0) {
-      Serial.print("WEBSERVER - handleCommand - Move down roller : ");
-      Serial.println(roller);
-      movedown(roller);
-    }
-    else if (command == 1) {
-      Serial.print("WEBSERVER - handleCommand - Move up roller : ");
-      Serial.println(roller);
-      moveup(roller);
-    }
-    else if (command == 2) {
-      Serial.print("WEBSERVER - handleCommand - Stop roller : ");
-      Serial.println(roller);
-      stop(roller);
+        write_output("WEBSERVER - handleCommand - Move down roller : " + String(roller));
+        movedown(roller);
+      }
+      else if (command == 1) {
+        write_output("WEBSERVER - handleCommand - Move up roller : " + String(roller));
+        moveup(roller);
+      }
+      else if (command == 2) {
+        write_output("WEBSERVER - handleCommand - Stop roller : " + String(roller));
+        stop(roller);
     }
     
     redirect((char*)"/command");
     return;
   }
 
-  char page[2200];
+  // Page as: 290 char for top + 626 char per REMOTE + 44 char for end
+  server.setContentLength(290 + 626 * REMOTES_COUNT + 44);
+  server.send(200, "text/html", "");
 
-  snprintf(page, 2200,"%s<div>\
+  int buffer_size=2000;
+  char page[buffer_size];
+  // 290 char
+  snprintf(page, buffer_size,"%s<div>\
 <table  class=\"w3-table\">\
-<tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Cuisine</h1>\
+",HEADER);
+  server.sendContent_P(page);
+
+// Loop on remotes 
+// 626 char per remote
+for (size_t i = 0; i < REMOTES_COUNT; i++)
+{
+  snprintf(page, buffer_size,
+  "<tr><td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
+<h1>%s</h1>\
 </header></td>\
 </tr>\
 <tr>\
-<td><a href=\"command?roller=0&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=0&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=0&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr>\
-<tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Salle &agrave; manger</h1>\
-</header></td>\
-</tr>\
-<tr>\
-<td><a href=\"command?roller=1&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=1&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=1&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr><tr>\
-<td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
-  <h1>Salon</h1>\
-</header></td>\
-</tr>\
-<tr>\
-<td><a href=\"command?roller=2&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
-<td><a href=\"command?roller=2&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
-<td><a href=\"command?roller=2&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
-</tr>\
-</table>\
+<td><a href=\"command?roller=%d&command=0\" class=\"w3-button w3-red w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8681;</span></a></td>\
+<td><a href=\"command?roller=%d&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
+<td><a href=\"command?roller=%d&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
+</tr>",remote_name[i],i,i,i);
+  server.sendContent_P(page);
+}
+
+  // 44 char
+  snprintf(page, buffer_size, "</table>\
 </div>\
-<br/>%s", HEADER, FOOTER);
-        
-  server.send(200, "text/html", page);
+<br/>%s", FOOTER);
+server.sendContent_P(page);
   
 }
 
@@ -523,6 +619,11 @@ void ws_config(int rescue_mode) {
   else {
     strcpy(key, "");
     //eeprom_get_key(key);
+    prefs_get_key(key);
+    write_output("Loaded application key: " + String(key));
+    prefs_get_token(token);
+    write_output("Loaded API token: ###########");
+    Serial.println("Loaded API token: " + String(token));
   }
   char url[40];
   
@@ -546,6 +647,8 @@ void ws_config(int rescue_mode) {
   server.on(url, handleAttach);
   get_obfuscated_url(url, key, (char*)"/clock"); 
   server.on(url, handleClock);
+  get_obfuscated_url(url, key, (char*)"/api"); 
+  server.on(url, handleApi);
 
   server.onNotFound(handleCommand);
 

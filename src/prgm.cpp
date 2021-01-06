@@ -9,15 +9,13 @@ extern prgm_t * prgms;
 
 
 int getavailableprgm(void) {
-  int i = 0;
-  for (i; ( i < PRGM_COUNT && prgms[i].used==true); i++);
-  if (i==PRGM_COUNT) {
-    return -1;
+  for (int i=0; i < PRGM_COUNT ; i++){
+    if(prgms[i].used!=true){
+      return i;
+    }
   }
-  return i;
+  return -1;
 }
-
-
 
 
 bool addprgm(uint8_t roller, uint8_t hour, uint8_t minute, uint8_t command) {

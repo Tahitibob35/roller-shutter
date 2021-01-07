@@ -109,3 +109,13 @@ void checkprgms(int cur_h, int cur_m) {
   }
 
 }
+
+int getprgmcount(void) {
+  int cnt = 0;
+  for (int i=0; i < PRGM_COUNT ; i++){
+    if(prgms[i].used==true){
+      cnt++;
+    }
+  }
+  return cnt;
+}

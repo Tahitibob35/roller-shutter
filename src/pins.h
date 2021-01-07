@@ -1,4 +1,4 @@
-#define RESCUE_PIN 14
+#define RESCUE_PIN 17
 #define STATUS_LED_PIN 12
 #define TX_LED_PIN 26
 

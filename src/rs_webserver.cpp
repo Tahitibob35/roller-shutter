@@ -7,6 +7,9 @@
 #include "misc.h"
 #include "rs_time.h"
 #include "misc.h"
+#include "rs_scheduledtasks.h"
+
+#define PAGE_LENGTH 4000
 
 char key[10];
 char token[16]; // Token to validate API calls
@@ -23,18 +26,7 @@ char HEADER[] = "<html>\
 
 char  FOOTER[] = "<br/></div></body></html>";
 
-const char *remote_name[REMOTES_COUNT] = { 
-  (char *)"Cuisine", 
-  (char *)"Baie vitr&eacute;e",
-  (char *)"Buffet",
-  (char *)"Porte fen&ecirc;tre",
-  (char *)"Bureau",
-  (char *)"Chambre 1",
-  (char *)"Chambre 2",
-  (char *)"Chambre 3",
-  (char *)"Tout bas",
-  (char *)"Tout haut",
-};
+
 
 void ws_handle_client(void) {
   
@@ -49,7 +41,7 @@ void handleWifi() {
 
   // GET Method
 
-  char page[2000];
+  char page[PAGE_LENGTH];
 
   if (server.method() == HTTP_POST) {
     String accesspoint = server.arg("accesspoint");
@@ -69,7 +61,7 @@ void handleWifi() {
   char accesspoint_str[ACCESSPOINT_LENGTH];
   prefs_get_accesspoint(accesspoint_str);
 
-  snprintf(page, 2000,"%s<header class=\"w3-container w3-card w3-theme\">\
+  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Wifi</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -99,7 +91,7 @@ void handleClock() {
 
   // GET Method
 
-  char page[2000];
+  char page[PAGE_LENGTH];
 
   if (server.method() == HTTP_POST) {
     String hours = server.arg("hours");
@@ -115,7 +107,7 @@ void handleClock() {
   gettime(&hours, &minutes);
   Serial.println(hours);
 
-  snprintf(page, 2000,"%s<header class=\"w3-container w3-card w3-theme\">\
+  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Horloge</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -145,7 +137,7 @@ void handleApplication() {
 
   // GET Method
 
-  char page[4000];
+  char page[PAGE_LENGTH];
 
   if (server.method() == HTTP_POST) {
     String key = server.arg("key");
@@ -199,7 +191,7 @@ void handleApplication() {
   prefs_get_syslog_ip(syslog_ip);
   syslog_port = prefs_get_syslog_port();
 
-  snprintf(page, 4000,"%s<header class=\"w3-container w3-card w3-theme\">\
+  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Application</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -238,9 +230,9 @@ void handleConfig() {
   
   Serial.println("WEBSERVER - handleConfig - Serving config page");
 
-  char page[2000];
+  char page[PAGE_LENGTH];
 
-  snprintf(page, 2000,"%s\
+  snprintf(page, PAGE_LENGTH,"%s\
 <header class=\"w3-container w3-card w3-theme\">\
 <h1>Configuration</h1>\
 </header>\
@@ -294,13 +286,11 @@ for (size_t i = 0; i < REMOTES_COUNT; i++)
 <br/>\
 ",i,remote_name[i]);
 }
-snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">retour</a>%s", FOOTER);
+snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>%s", FOOTER);
         
   server.send(200, "text/html", page);
   
 }
-
-
 
 
 void handleApi() {
@@ -369,10 +359,9 @@ void handleCommand() {
   server.setContentLength(290 + 626 * REMOTES_COUNT + 44);
   server.send(200, "text/html", "");
 
-  int buffer_size=2000;
-  char page[buffer_size];
+  char page[PAGE_LENGTH];
   // 290 char
-  snprintf(page, buffer_size,"%s<div>\
+  snprintf(page, PAGE_LENGTH,"%s<div>\
 <table  class=\"w3-table\">\
 ",HEADER);
   server.sendContent_P(page);
@@ -381,7 +370,7 @@ void handleCommand() {
 // 626 char per remote
 for (size_t i = 0; i < REMOTES_COUNT; i++)
 {
-  snprintf(page, buffer_size,
+  snprintf(page, PAGE_LENGTH,
   "<tr><td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
 <h1>%s</h1>\
 </header></td>\
@@ -395,7 +384,7 @@ for (size_t i = 0; i < REMOTES_COUNT; i++)
 }
 
   // 44 char
-  snprintf(page, buffer_size, "</table>\
+  snprintf(page, PAGE_LENGTH, "</table>\
 </div>\
 <br/>%s", FOOTER);
 server.sendContent_P(page);
@@ -431,16 +420,15 @@ void handlePrgmList() {
   
   Serial.println("WEBSERVER - handlePrgmList - Serving programs list page");
 
-  char page[2000] = "";
+  char page[PAGE_LENGTH] = "";
   uint8_t roller = 0;
   uint8_t hour = 0;
   uint8_t minute = 0;
   uint8_t command = 0;
   uint8_t result = 0;
-  char rollername[20];
   char commandname[20];
   
-  snprintf(page, 2000,"%s%s<header class=\"w3-container w3-card w3-theme\">\
+  snprintf(page, PAGE_LENGTH,"%s%s<header class=\"w3-container w3-card w3-theme\">\
   <h1>Programmes</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -454,18 +442,19 @@ void handlePrgmList() {
   for (int prgm=0; prgm<PRGM_COUNT;prgm++) {
     result = getprgm(prgm, &roller, &hour, &minute, &command);
     if (result) {
-      getrollername(roller, rollername);
+      Serial.print("Roller id : ");
+      Serial.println(roller);
       getcommandname(command, commandname);
-      snprintf(page, 2000,"%s\
+      snprintf(page, PAGE_LENGTH,"%s\
       <tr><th scope=\"row\">%i</th><td>%s</td><td>%i</td><td>%i</td><td>%s</td>\
       <td><button class=\"w3-button w3-circle w3-red w3-button w3-small\"><a href=\"prgmdelete?prgm=%i\">&times;</a></button></td>\
-      </td></tr>", page, i, rollername, hour, minute, commandname, prgm);
+      </td></tr>", page, i, remote_name[roller], hour, minute, commandname, prgm);
 
       i++;
      }
     
   }
-  snprintf(page, 2000,"%s</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/></div>%s", page, FOOTER);
+  snprintf(page, PAGE_LENGTH,"%s</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/></div>%s", page, FOOTER);
         
   server.send(200, "text/html", page);
 }
@@ -480,6 +469,7 @@ void handlePrgmDelete(void) {
   Serial.print("WEBSERVER - handlePrgmDelete - Deleting prgm : ");
   Serial.print(prgm);
   delprgm(prgm.toInt());
+  refresh_programTask();
 
   redirect((char*)"/prgmlist");
   
@@ -492,7 +482,7 @@ void handlePrgmAdd() {
 
   // GET Method
 
-  char page[2500];
+  char page[PAGE_LENGTH];
 
   if (server.method() == HTTP_POST) {
     String roller = server.arg("roller");
@@ -508,8 +498,10 @@ void handlePrgmAdd() {
     Serial.print("WEBSERVER - handlePrgmAdd - Command : ");
     Serial.println(command);
 
-    if (roller.length() != 0 && hour .length() != 0 && minute.length() != 0 && command.length() != 0)
+    if (roller.length() != 0 && hour .length() != 0 && minute.length() != 0 && command.length() != 0) {
       addprgm(roller.toInt(), hour.toInt(), minute.toInt(), command.toInt());
+      refresh_programTask();
+    }
     char url[40];
     get_obfuscated_url(url, key, (char*)"/prgmlist");
     server.sendHeader("Location", url, true);
@@ -517,7 +509,7 @@ void handlePrgmAdd() {
     return;
   }
 
-  snprintf(page, 2500,"%s<header class=\"w3-container w3-card w3-theme\">\
+  snprintf(page, 4000,"%s<header class=\"w3-container w3-card w3-theme\">\
   <h1>Nouveau</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -525,14 +517,16 @@ void handlePrgmAdd() {
       <form action=\"prgmadd\" method=\"post\">\
       <div class=\"form-group\">\
       <select class=\"w3-select w3-xxlarge\" id=\"roller\" name=\"roller\">\
-        <option value=\"\" disabled selected>Volet</option>\
-        <option value=\"0\">Cuisine</option>\
-        <option value=\"1\">Salle &agrave; manger</option>\
-        <option value=\"2\">Salon</option>\
-      </select><br/><br/>\
-        <select class=\"w3-select w3-xxlarge\" id=\"hour\" name=\"hour\">\
-        <option value=\"\" disabled selected>Heures</option>\
-        <option value=\"7\">7</option>\
+        <option value=\"\" disabled selected>Volet</option>", HEADER);
+
+  for (size_t i = 0; i < REMOTES_COUNT; i++) {
+    snprintf(page, PAGE_LENGTH, "%s<option value=\"%d\">%s</option>",page, i, remote_name[i]);
+  }
+
+  snprintf(page, PAGE_LENGTH, "%s</select><br/><br/>\
+<select class=\"w3-select w3-xxlarge\" id=\"hour\" name=\"hour\">\
+<option value=\"\" disabled selected>Heures</option>\
+<option value=\"7\">7</option>\
 <option value=\"8\">8</option>\
 <option value=\"9\">9</option>\
 <option value=\"10\">10</option>\
@@ -575,25 +569,9 @@ void handlePrgmAdd() {
     </form><br/>\
     <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </a>\
-<br/></div>%s", HEADER, FOOTER);
+<br/></div>%s", page, FOOTER);
 
   server.send(200, "text/html", page);
-}
-
-
-
-void getrollername(uint8_t roller, char * name) {
-  switch (roller) {
-    case 0 :
-      strcpy(name, "Cuisine");
-      break;
-    case 1 :
-      strcpy(name, "Salle &agrave; m.");
-      break;
-    case 2 :
-      strcpy(name, "Salon");
-      break;
-  }
 }
 
 

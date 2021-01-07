@@ -20,5 +20,6 @@ bool addprgm(uint8_t roller, uint8_t hour, uint8_t minute, uint8_t command);
 bool delprgm(uint8_t prgm);
 bool getprgm(uint8_t prgm, uint8_t * roller, uint8_t * hour, uint8_t * minute, uint8_t * command);
 void checkprgms(int cur_h, int cur_m);
+int getprgmcount(void);
 
 #endif //PRGM_H_

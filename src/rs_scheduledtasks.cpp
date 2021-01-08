@@ -16,6 +16,8 @@ Task programTask(TASK_MINUTE, TASK_FOREVER, &checkTriggerProgram, &runner, false
 Task checkWifiTask(TASK_MINUTE, TASK_FOREVER, &check_wifi, &runner, false);
 // Do Wifi LED blink (every second)
 Task wifiBlinkTask(1 * TASK_SECOND, TASK_FOREVER, &wifiLEDOn, &runner, false);
+// TX LED task
+Task TXLEDTask(1 * TASK_SECOND, TASK_FOREVER, &TXLEDOff, &runner, false);
 
 void checkTriggerProgram(){
 
@@ -58,6 +60,19 @@ void refresh_programTask(void) {
     programTask.disable();
   }
   
+}
+
+void TXLEDOnfor1s(void) {
+  // Cancel task in case already running
+  TXLEDTask.cancel();
+  TXLEDTask.setCallback(&TXLEDOff);
+  TXLEDTask.enableDelayed(TASK_SECOND);
+  digitalWrite(TX_LED_PIN, HIGH);
+}
+
+void TXLEDOff(void) {
+  digitalWrite(TX_LED_PIN, LOW);
+  TXLEDTask.cancel();
 }
 
 void execute_runner(void) {

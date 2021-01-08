@@ -7,6 +7,7 @@
 
 #define KEY_LENGTH 10
 #define IP_LENGTH 16
+#define NTP_SERVER_LENGTH 20
 #define ACCESSPOINT_LENGTH 20
 #define PASSWORD_LENGTH 20
 
@@ -20,6 +21,8 @@ void prefs_get_syslog_ip(char * syslog_ip);
 void prefs_set_syslog_ip(String syslog_ip);
 uint16_t prefs_get_syslog_port();
 void prefs_set_syslog_port(int syslog_port);
+void prefs_set_ntp_server(String ntp_server);
+void prefs_get_ntp_server(char * ntp_server);
 void prefs_set_accesspoint(String accesspoint);
 void prefs_get_accesspoint(char * accesspoint);
 void prefs_set_password(String password);

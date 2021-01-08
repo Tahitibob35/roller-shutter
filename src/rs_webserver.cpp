@@ -176,6 +176,12 @@ void handleApplication() {
       prefs_set_syslog_port(syslog_port.toInt());
     }
 
+    String ntp_server = server.arg("ntp_server");
+    if(ntp_server.length() > 0 ){
+      write_output("WEBSERVER - handleApplication - Storing ntp_server : " + ntp_server);
+      prefs_set_ntp_server(ntp_server);
+    }
+
     redirect((char*)"/application");
     return;
   }
@@ -190,6 +196,9 @@ void handleApplication() {
   syslog_state = prefs_get_syslog_state();
   prefs_get_syslog_ip(syslog_ip);
   syslog_port = prefs_get_syslog_port();
+
+  char ntp_server[NTP_SERVER_LENGTH];
+  prefs_get_ntp_server(ntp_server);
 
   snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Application</h1>\
@@ -214,13 +223,15 @@ void handleApplication() {
   <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_ip\" name=\"syslog_ip\" value=\"%s\"><br/>\
   <label for=\"syslog_port\">Syslog serveur port:</label><br/>\
   <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_port\" name=\"syslog_port\" value=\"%d\"><br/>\
+  <label for=\"ntp_server\">NTP serveur:</label><br/>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"ntp_server\" name=\"ntp_server\" value=\"%s\"><br/>\
 </p>\
 <input type=\"submit\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\" value=\"Enregistrer\">\
 </form>\
 <br/>\
 <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </button>\
-</a>%s", HEADER, key_str, token, syslog_state ? "checked" : " ", syslog_state ? " " : "checked", syslog_ip, syslog_port, FOOTER);
+</a>%s", HEADER, key_str, token, syslog_state ? "checked" : " ", syslog_state ? " " : "checked", syslog_ip, syslog_port, ntp_server, FOOTER);
 
   server.send(200, "text/html", page);
 }

@@ -1,6 +1,8 @@
 #ifndef VARS_H_
 #define VARS_H_
 
+#define delay_after_move
+
 #define REMOTES_COUNT 3
 
 const char *remote_name[REMOTES_COUNT] = { 

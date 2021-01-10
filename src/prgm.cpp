@@ -3,6 +3,7 @@
 #include "prgm.h"
 #include "prefs.h"
 #include "misc.h"
+#include "vars.h"
 
 
 extern prgm_t * prgms;
@@ -104,7 +105,9 @@ void checkprgms(int cur_h, int cur_m) {
           moveup(roller);
         }    
       }
+#ifdef delay_after_move
       delay(3000);
+#endif
     }
   }
 

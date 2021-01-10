@@ -3,10 +3,10 @@
 #include "prgm.h"
 #include "prefs.h"
 #include "misc.h"
-#include "vars.h"
 
 
 extern prgm_t * prgms;
+extern const char *remote_name;
 
 
 int getavailableprgm(void) {

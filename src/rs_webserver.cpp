@@ -441,7 +441,7 @@ void handlePrgmDelete(AsyncWebServerRequest *request) {
     String prgm = request->arg("prgm");
 
     Serial.print("WEBSERVER - handlePrgmDelete - Deleting prgm : ");
-    Serial.print(prgm);
+    Serial.println(prgm);
     delprgm(prgm.toInt());
     refresh_programTask();
   }

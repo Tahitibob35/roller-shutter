@@ -20,8 +20,6 @@ void connect_to_wifi(void) {
   char password[PASSWORD_LENGTH];
   prefs_get_password(password);
 
-
-
   Serial.println("WIFI - Connect to access point");
   Serial.print("WIFI - Access point : ");
   Serial.println(ssid);

@@ -1,4 +1,4 @@
-#include "WebServer.h"
+#include "ESPAsyncWebServer.h"
 
 #include "rs_webserver.h"
 #include "prgm.h"
@@ -9,12 +9,10 @@
 #include "misc.h"
 #include "rs_scheduledtasks.h"
 
-#define PAGE_LENGTH 4000
-
 char key[10];
 char token[16]; // Token to validate API calls
 
-WebServer server(80);
+AsyncWebServer server(80);
 extern prgm_t prgms[PRGM_COUNT];
 
 char HEADER[] = "<html>\
@@ -26,42 +24,37 @@ char HEADER[] = "<html>\
 
 char  FOOTER[] = "<br/></div></body></html>";
 
-
-
-void ws_handle_client(void) {
-  
-  server.handleClient();
-  
+void notFound(AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
 }
 
 
-void handleWifi() {
-  
+void handleWifi(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handleWifi - Serving wifi page");
 
-  // GET Method
-
-  char page[PAGE_LENGTH];
-
-  if (server.method() == HTTP_POST) {
-    String accesspoint = server.arg("accesspoint");
+  if (request->method() == HTTP_POST) {
+    String accesspoint = request->arg("accesspoint");
     Serial.print("WEBSERVER - handleWifi - Storing accesspoint : ");
     Serial.println(accesspoint);
     prefs_set_accesspoint(accesspoint);
-    String password = server.arg("password");
+    String password = request->arg("password");
     Serial.print("WEBSERVER - handleWifi - Storing password : ");
     Serial.println(password);
     prefs_set_password(password);
-    
-    redirect((char*)"/wifi");
+
+    redirect(request, (char*)"/wifi");
     return;
 
   }
 
-  char accesspoint_str[ACCESSPOINT_LENGTH];
-  prefs_get_accesspoint(accesspoint_str);
+  // GET Method
+  if (request->method() == HTTP_GET) {
+    char page[PAGE_LENGTH];
+    char accesspoint_str[ACCESSPOINT_LENGTH];
+    prefs_get_accesspoint(accesspoint_str);
 
-  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
+    snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Wifi</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -81,33 +74,33 @@ void handleWifi() {
 </button>\
 </a>%s", HEADER, accesspoint_str, FOOTER);
 
-  server.send(200, "text/html", page);
+    request->send(200, "text/html", page);
+  }
 }
 
 
-void handleClock() {
-  
+void handleClock(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handleClock - Serving clock page");
 
-  // GET Method
-
-  char page[PAGE_LENGTH];
-
-  if (server.method() == HTTP_POST) {
-    String hours = server.arg("hours");
-    String minutes = server.arg("minutes");
+  if (request->method() == HTTP_POST) {
+    String hours = request->arg("hours");
+    String minutes = request->arg("minutes");
     settime(hours.toInt(), minutes.toInt());
-    redirect((char*)"/clock");
+    redirect(request, (char*)"/clock");
     return;
 
   }
 
-  uint8_t hours=0;
-  uint8_t minutes=0;
-  gettime(&hours, &minutes);
-  Serial.println(hours);
+  if (request->method() == HTTP_GET) {
+    char page[PAGE_LENGTH];
 
-  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
+    uint8_t hours=0;
+    uint8_t minutes=0;
+    gettime(&hours, &minutes);
+    Serial.println(hours);
+
+    snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Horloge</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -127,33 +120,30 @@ void handleClock() {
 </button>\
 </a>%s", HEADER, hours, minutes, FOOTER);
 
-  server.send(200, "text/html", page);
+    request->send(200, "text/html", page);
+  }
 }
 
 
-void handleApplication() {
-  
+void handleApplication(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handleApplication - Serving application page");
 
-  // GET Method
-
-  char page[PAGE_LENGTH];
-
-  if (server.method() == HTTP_POST) {
-    String key = server.arg("key");
-    if(server.hasArg("key")){
+  if (request->method() == HTTP_POST) {
+    if(request->hasArg("key")){
+      String key = request->arg("key");
       write_output("WEBSERVER - handleApplication - Storing key : " + key);
       prefs_set_key(key);
     }
 
-    String token_arg = server.arg("token");
-    if(token_arg.length() > 0 ){
+    if(request->hasArg("token")){
+      String token_arg = request->arg("token");
       write_output("WEBSERVER - handleApplication - Storing token : " + token_arg);
       prefs_set_token(token_arg);
     }
 
-    String syslog_state = server.arg("syslog_state");
-    if(syslog_state.length() > 0 ){
+    if(request->hasArg("syslog_state")){
+      String syslog_state = request->arg("syslog_state");
       write_output("WEBSERVER - handleApplication - Storing syslog_state : " + syslog_state);
       if(syslog_state.compareTo("yes") == 0){
         // syslog_state == "yes"
@@ -164,34 +154,47 @@ void handleApplication() {
       }
     }
 
-    String syslog_ip = server.arg("syslog_ip");
-    if(syslog_ip.length() > 0 ){
+    if(request->hasArg("syslog_ip") ){
+      String syslog_ip = request->arg("syslog_ip");
       write_output("WEBSERVER - handleApplication - Storing syslog_ip : " + syslog_ip);
       prefs_set_syslog_ip(syslog_ip);
     }
 
-    String syslog_port = server.arg("syslog_port");
-    if(syslog_port.length() > 0 ){
+    if(request->hasArg("syslog_port")){
+      String syslog_port = request->arg("syslog_port");
       write_output("WEBSERVER - handleApplication - Storing syslog_port : " + syslog_port);
       prefs_set_syslog_port(syslog_port.toInt());
     }
 
-    redirect((char*)"/application");
+    if(request->hasArg("ntp_server")){
+      String ntp_server = request->arg("ntp_server");
+      write_output("WEBSERVER - handleApplication - Storing ntp_server : " + ntp_server);
+      prefs_set_ntp_server(ntp_server);
+    }
+
+    redirect(request, (char*)"/application");
     return;
   }
 
-  char key_str[KEY_LENGTH];
-  prefs_get_key(key_str);
-  prefs_get_token(token);
 
-  boolean syslog_state = false;
-  char syslog_ip[IP_LENGTH];
-  int16_t syslog_port;
-  syslog_state = prefs_get_syslog_state();
-  prefs_get_syslog_ip(syslog_ip);
-  syslog_port = prefs_get_syslog_port();
+  // GET Method
+  if (request->method() == HTTP_GET) {
+    char page[PAGE_LENGTH];
+    char key_str[KEY_LENGTH];
+    prefs_get_key(key_str);
+    prefs_get_token(token);
 
-  snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
+    boolean syslog_state = false;
+    char syslog_ip[IP_LENGTH];
+    int16_t syslog_port;
+    syslog_state = prefs_get_syslog_state();
+    prefs_get_syslog_ip(syslog_ip);
+    syslog_port = prefs_get_syslog_port();
+
+    char ntp_server[NTP_SERVER_LENGTH];
+    prefs_get_ntp_server(ntp_server);
+
+    snprintf(page, PAGE_LENGTH,"%s<header class=\"w3-container w3-card w3-theme\">\
 <h1>Application</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -214,20 +217,24 @@ void handleApplication() {
   <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_ip\" name=\"syslog_ip\" value=\"%s\"><br/>\
   <label for=\"syslog_port\">Syslog serveur port:</label><br/>\
   <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"syslog_port\" name=\"syslog_port\" value=\"%d\"><br/>\
+  <label for=\"ntp_server\">NTP serveur:</label><br/>\
+  <input class=\"w3-input w3-border w3-light-grey w3-xxlarge\" type=\"text\" id=\"ntp_server\" name=\"ntp_server\" value=\"%s\"><br/>\
 </p>\
 <input type=\"submit\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\" value=\"Enregistrer\">\
 </form>\
 <br/>\
 <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </button>\
-</a>%s", HEADER, key_str, token, syslog_state ? "checked" : " ", syslog_state ? " " : "checked", syslog_ip, syslog_port, FOOTER);
+</a>%s", HEADER, key_str, token, syslog_state ? "checked" : " ", syslog_state ? " " : "checked", syslog_ip, syslog_port, ntp_server, FOOTER);
 
-  server.send(200, "text/html", page);
+    request->send(200, "text/html", page);
+    return;
+  }
 }
 
 
-void handleConfig() {
-  
+void handleConfig(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handleConfig - Serving config page");
 
   char page[PAGE_LENGTH];
@@ -247,81 +254,80 @@ void handleConfig() {
 <a href=\"application\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Application</a>\
 <br/>\
 <a href=\"clock\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Horloge</a>%s", HEADER, FOOTER);
-        
-  server.send(200, "text/html", page);
-  
+
+  request->send(200, "text/html", page);
+
 }
 
 
-void handleAttach() {
-  
+void handleAttach(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handleAttach - Serving config config");
 
-  String roller_str = server.arg("roller");
-    if (roller_str.length() > 0) {
+  if (request->hasArg("roller")) {
+    String roller_str = request->arg("roller");
     int roller = roller_str.toInt();
 
     Serial.print("WEBSERVER - handleAttach - Attaching roller : ");
     Serial.println(roller);
     prog(roller);
 
-    redirect((char*)"/attach");
+    redirect(request, (char*)"/attach");
     return;
   }
 
-  int buffer_size=2000;
 
-  char page[buffer_size];
+  char page[PAGE_LENGTH];
 
-  snprintf(page, buffer_size,"%s\
+  snprintf(page, PAGE_LENGTH,"%s\
 <header class=\"w3-container w3-card w3-theme\">\
 <h1>Attacher</h1>\
 </header>\
 <div class=\"w3-container\">\
 <br/>", HEADER);
-// Loop on remotes
-for (size_t i = 0; i < REMOTES_COUNT; i++)
-{
-  snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"attach?roller=%d\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">%s</a>\
+  // Loop on remotes
+  for (size_t i = 0; i < REMOTES_COUNT; i++)
+  {
+    snprintf(page + strlen(page), PAGE_LENGTH - strlen(page),"<a href=\"attach?roller=%d\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">%s</a>\
 <br/>\
 ",i,remote_name[i]);
-}
-snprintf(page + strlen(page), buffer_size - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>%s", FOOTER);
-        
-  server.send(200, "text/html", page);
-  
+  }
+  snprintf(page + strlen(page), PAGE_LENGTH - strlen(page),"<a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>%s", FOOTER);
+
+  request->send(200, "text/html", page);
+
 }
 
 
-void handleApi() {
+void handleApi(AsyncWebServerRequest *request) {
   write_output("WEBSERVER - handleAPI - Serving API page");
-  String roller_str = server.arg("roller");
-  String command_str = server.arg("command");
-  String token_str = server.arg("token");
 
-  if (roller_str.length() > 0 && command_str.length() > 0 && token_str.length() > 0) {
+  if (request->hasArg("roller") && request->hasArg("command") && request->hasArg("token")) {
+    String roller_str = request->arg("roller");
+    String command_str = request->arg("command");
+    String token_str = request->arg("token");
     int command = command_str.toInt();
     int roller = roller_str.toInt();
 
     if (token_str.compareTo(token) != 0){
       write_output("WEBSERVER - handleAPI - wrong token: " + token_str);
-      server.send(401, "text/plain", "Unauthorized");
+      request->send(401);
     }else{
       if (command == 0) {
         write_output("WEBSERVER - handleAPI - Move down roller : " + String(roller));
-        server.send(200, "text/plain", "OK");
+        request->send(200, "text/plain", "OK");
         movedown(roller);
         return;
       }
       else if (command == 1) {
         write_output("WEBSERVER - handleAPI - Move up roller : " + String(roller));
-        server.send(200, "text/plain", "OK");
+        request->send(200, "text/plain", "OK");
         moveup(roller);
         return;
       }
       else if (command == 2) {
         write_output("WEBSERVER - handleAPI - Stop roller : " + String(roller));
-        server.send(200, "text/plain", "OK");
+        request->send(200, "text/plain", "OK");
         stop(roller);
         return;
       }
@@ -329,13 +335,13 @@ void handleApi() {
   }
 }
 
-void handleCommand() {
-  
+void handleCommand(AsyncWebServerRequest *request) {
+
   write_output("WEBSERVER - handleCommand - Serving command page");
-  
-  String roller_str = server.arg("roller");
-  String command_str = server.arg("command");
-  if (roller_str.length() > 0 && command_str.length() > 0) {
+
+  if (request->hasArg("roller") && request->hasArg("command")) {
+    String roller_str = request->arg("roller");
+    String command_str = request->arg("command");
     int roller = roller_str.toInt();
     int command = command_str.toInt();
     if (command == 0) {
@@ -350,27 +356,21 @@ void handleCommand() {
         write_output("WEBSERVER - handleCommand - Stop roller : " + String(roller));
         stop(roller);
     }
-    
-    redirect((char*)"/command");
+
+    redirect(request,(char*)"/command");
     return;
   }
 
-  // Page as: 290 char for top + 626 char per REMOTE + 44 char for end
-  server.setContentLength(290 + 626 * REMOTES_COUNT + 44);
-  server.send(200, "text/html", "");
+  AsyncResponseStream *response = request->beginResponseStream("text/html");
 
-  char page[PAGE_LENGTH];
-  // 290 char
-  snprintf(page, PAGE_LENGTH,"%s<div>\
+  response->printf("%s<div>\
 <table  class=\"w3-table\">\
 ",HEADER);
-  server.sendContent_P(page);
 
-// Loop on remotes 
-// 626 char per remote
+// Loop on remotes
 for (size_t i = 0; i < REMOTES_COUNT; i++)
 {
-  snprintf(page, PAGE_LENGTH,
+  response->printf(
   "<tr><td colspan=\"3\"><header class=\"w3-container w3-card w3-theme\">\
 <h1>%s</h1>\
 </header></td>\
@@ -380,55 +380,28 @@ for (size_t i = 0; i < REMOTES_COUNT; i++)
 <td><a href=\"command?roller=%d&command=2\" class=\"w3-button w3-grey w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;color:white;'>&#9634;</span></a></td>\
 <td><a href=\"command?roller=%d&command=1\" class=\"w3-button w3-teal w3-xlarge w3-round-large\" style=\"width:100%%\"><span style='font-size:60px;'>&#8679;</span></a></td>\
 </tr>",remote_name[i],i,i,i);
-  server.sendContent_P(page);
 }
 
-  // 44 char
-  snprintf(page, PAGE_LENGTH, "</table>\
+  response->printf("</table>\
 </div>\
 <br/>%s", FOOTER);
-server.sendContent_P(page);
-  
+
+  request->send(response);
 }
 
-void get_obfuscated_url(char * url, char * key, char * baseurl) {
+void handlePrgmList(AsyncWebServerRequest *request) {
 
-  if (strlen(key) == 0) {
-    strcpy(url, baseurl);
-  }
-  else {
-    sprintf(url, "/%s%s", key, baseurl);
-  }
-  Serial.print("WEBSERVER - get_obfuscated_url - url :");
-  Serial.println(url);
-
-}
-
-
-void redirect(char * url) {
-
-  char obfuscated_url[40];
-
-  get_obfuscated_url(obfuscated_url, key, url);
-  server.sendHeader("Location", obfuscated_url, true);
-  server.send ( 302, "text/plain", "");
-
-}
-
-
-void handlePrgmList() {
-  
   Serial.println("WEBSERVER - handlePrgmList - Serving programs list page");
 
-  char page[PAGE_LENGTH] = "";
+  AsyncResponseStream *response = request->beginResponseStream("text/html");
   uint8_t roller = 0;
   uint8_t hour = 0;
   uint8_t minute = 0;
   uint8_t command = 0;
   uint8_t result = 0;
   char commandname[20];
-  
-  snprintf(page, PAGE_LENGTH,"%s%s<header class=\"w3-container w3-card w3-theme\">\
+
+  response->printf("%s<header class=\"w3-container w3-card w3-theme\">\
   <h1>Programmes</h1>\
 </header>\
 <div class=\"w3-container\">\
@@ -437,7 +410,8 @@ void handlePrgmList() {
 <br/>\
 <table class=\"w3-table w3-large w3-striped\">\
 <tr class=\"w3-teal\"><th>#</th><th>Volet</th><th>h</th><th>m</th><th>cmd</th><th></th>\
-    </tr>", page, HEADER);
+</tr>", HEADER);
+
   int i = 1;
   for (int prgm=0; prgm<PRGM_COUNT;prgm++) {
     result = getprgm(prgm, &roller, &hour, &minute, &command);
@@ -445,56 +419,53 @@ void handlePrgmList() {
       Serial.print("Roller id : ");
       Serial.println(roller);
       getcommandname(command, commandname);
-      snprintf(page, PAGE_LENGTH,"%s\
-      <tr><th scope=\"row\">%i</th><td>%s</td><td>%i</td><td>%i</td><td>%s</td>\
-      <td><button class=\"w3-button w3-circle w3-red w3-button w3-small\"><a href=\"prgmdelete?prgm=%i\">&times;</a></button></td>\
-      </td></tr>", page, i, remote_name[roller], hour, minute, commandname, prgm);
+      response->printf("\
+<tr><th scope=\"row\">%i</th><td>%s</td><td>%i</td><td>%i</td><td>%s</td>\
+<td><button class=\"w3-button w3-circle w3-red w3-button w3-small\"><a href=\"prgmdelete?prgm=%i\">&times;</a></button></td>\
+</td></tr>", i, remote_name[roller], hour, minute, commandname, prgm);
 
       i++;
      }
-    
+
   }
-  snprintf(page, PAGE_LENGTH,"%s</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/></div>%s", page, FOOTER);
-        
-  server.send(200, "text/html", page);
+  response->printf("</table><br/><a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a><br/></div>%s", FOOTER);
+
+  request->send(response);
 }
 
+void handlePrgmDelete(AsyncWebServerRequest *request) {
 
-void handlePrgmDelete(void) {
-  
   Serial.println("WEBSERVER - handlePrgmDelete - Serving programs delete page");
-  
-  String prgm = server.arg("prgm");
-  
-  Serial.print("WEBSERVER - handlePrgmDelete - Deleting prgm : ");
-  Serial.print(prgm);
-  delprgm(prgm.toInt());
-  refresh_programTask();
 
-  redirect((char*)"/prgmlist");
-  
+  if(request->hasArg("prgm")){
+    String prgm = request->arg("prgm");
+
+    Serial.print("WEBSERVER - handlePrgmDelete - Deleting prgm : ");
+    Serial.print(prgm);
+    delprgm(prgm.toInt());
+    refresh_programTask();
+  }
+
+  redirect(request, (char*)"/prgmlist");
+
 }
 
 
-void handlePrgmAdd() {
-  
+void handlePrgmAdd(AsyncWebServerRequest *request) {
+
   Serial.println("WEBSERVER - handlePrgmAdd - Serving program add page");
 
-  // GET Method
-
-  char page[PAGE_LENGTH];
-
-  if (server.method() == HTTP_POST) {
-    String roller = server.arg("roller");
+  if (request->method() == HTTP_POST) {
+    String roller = request->arg("roller");
     Serial.print("WEBSERVER - handlePrgmAdd - Roller : ");
     Serial.println(roller);
-    String hour = server.arg("hour");
+    String hour = request->arg("hour");
     Serial.print("WEBSERVER - handlePrgmAdd - Hour : ");
     Serial.println(hour);
-    String minute = server.arg("minute");
+    String minute = request->arg("minute");
     Serial.print("WEBSERVER - handlePrgmAdd - Minute : ");
     Serial.println(minute);
-    String command = server.arg("command");
+    String command = request->arg("command");
     Serial.print("WEBSERVER - handlePrgmAdd - Command : ");
     Serial.println(command);
 
@@ -502,15 +473,15 @@ void handlePrgmAdd() {
       addprgm(roller.toInt(), hour.toInt(), minute.toInt(), command.toInt());
       refresh_programTask();
     }
-    char url[40];
-    get_obfuscated_url(url, key, (char*)"/prgmlist");
-    server.sendHeader("Location", url, true);
-    server.send ( 302, "text/plain", "");
+    redirect(request, (char*)"/prgmlist");
     return;
   }
 
-  snprintf(page, 4000,"%s<header class=\"w3-container w3-card w3-theme\">\
-  <h1>Nouveau</h1>\
+  if (request->method() == HTTP_GET) {
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
+
+    response->printf("%s<header class=\"w3-container w3-card w3-theme\">\
+<h1>Nouveau</h1>\
 </header>\
 <div class=\"w3-container\">\
 <br/>\
@@ -519,11 +490,11 @@ void handlePrgmAdd() {
       <select class=\"w3-select w3-xxlarge\" id=\"roller\" name=\"roller\">\
         <option value=\"\" disabled selected>Volet</option>", HEADER);
 
-  for (size_t i = 0; i < REMOTES_COUNT; i++) {
-    snprintf(page, PAGE_LENGTH, "%s<option value=\"%d\">%s</option>",page, i, remote_name[i]);
-  }
+    for (size_t i = 0; i < REMOTES_COUNT; i++) {
+        response->printf("<option value=\"%d\">%s</option>", i, remote_name[i]);
+    }
 
-  snprintf(page, PAGE_LENGTH, "%s</select><br/><br/>\
+    response->printf("</select><br/><br/>\
 <select class=\"w3-select w3-xxlarge\" id=\"hour\" name=\"hour\">\
 <option value=\"\" disabled selected>Heures</option>\
 <option value=\"7\">7</option>\
@@ -569,11 +540,34 @@ void handlePrgmAdd() {
     </form><br/>\
     <a href=\"config\" class=\"w3-button w3-teal w3-xxlarge w3-round-large w3-block\">Retour</a>\
 </a>\
-<br/></div>%s", page, FOOTER);
+<br/></div>%s", FOOTER);
 
-  server.send(200, "text/html", page);
+    request->send(response);
+  }
 }
 
+void get_obfuscated_url(char * url, char * key, char * baseurl) {
+
+  if (strlen(key) == 0) {
+    strcpy(url, baseurl);
+  }
+  else {
+    sprintf(url, "/%s%s", key, baseurl);
+  }
+  Serial.print("WEBSERVER - get_obfuscated_url - url :");
+  Serial.println(url);
+
+}
+
+void redirect(AsyncWebServerRequest *request, char * url) {
+
+  char obfuscated_url[40];
+
+  get_obfuscated_url(obfuscated_url, key, url);
+
+
+  request->redirect(obfuscated_url);
+}
 
 void getcommandname(uint8_t command, char * name) {
   switch (command) {
@@ -586,17 +580,17 @@ void getcommandname(uint8_t command, char * name) {
   }
 }
 
+
 void ws_config(int rescue_mode) {
 
   Serial.println("WEBSERVER - ws_config - Initialization");
 
-  
+
   if (rescue_mode) {
     strcpy(key, "");
   }
   else {
     strcpy(key, "");
-    //eeprom_get_key(key);
     prefs_get_key(key);
     write_output("Loaded application key: " + String(key));
     prefs_get_token(token);
@@ -604,34 +598,33 @@ void ws_config(int rescue_mode) {
     Serial.println("Loaded API token: " + String(token));
   }
   char url[40];
-  
+
   get_obfuscated_url(url, key, (char*)"/");
   server.on(url, handleCommand);
   get_obfuscated_url(url, key, (char*)"/command");
   server.on(url, handleCommand);
-  get_obfuscated_url(url, key, (char*)"/config"); 
-  server.on(url, handleConfig);  
-  get_obfuscated_url(url, key, (char*)"/wifi"); 
+  get_obfuscated_url(url, key, (char*)"/config");
+  server.on(url, handleConfig);
+  get_obfuscated_url(url, key, (char*)"/wifi");
   server.on(url, handleWifi);
-  get_obfuscated_url(url, key, (char*)"/application"); 
+  get_obfuscated_url(url, key, (char*)"/application");
   server.on(url, handleApplication);
-  get_obfuscated_url(url, key, (char*)"/prgmlist"); 
+  get_obfuscated_url(url, key, (char*)"/prgmlist");
   server.on(url, handlePrgmList);
-  get_obfuscated_url(url, key, (char*)"/prgmdelete"); 
+  get_obfuscated_url(url, key, (char*)"/prgmdelete");
   server.on(url, handlePrgmDelete);
-  get_obfuscated_url(url, key, (char*)"/prgmadd"); 
+  get_obfuscated_url(url, key, (char*)"/prgmadd");
   server.on(url, handlePrgmAdd);
-  get_obfuscated_url(url, key, (char*)"/attach"); 
+  get_obfuscated_url(url, key, (char*)"/attach");
   server.on(url, handleAttach);
-  get_obfuscated_url(url, key, (char*)"/clock"); 
+  get_obfuscated_url(url, key, (char*)"/clock");
   server.on(url, handleClock);
-  get_obfuscated_url(url, key, (char*)"/api"); 
+  get_obfuscated_url(url, key, (char*)"/api");
   server.on(url, handleApi);
 
-  server.onNotFound(handleCommand);
+  server.onNotFound(notFound);
 
   server.begin();
 
   Serial.println("WEBSERVER - ws_config - Web server started");
-  
 }

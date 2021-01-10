@@ -6,6 +6,7 @@
 #include "Syslog.h"
 #include "WiFi.h"
 #include "prefs.h"
+#include "rs_scheduledtasks.h"
 
 SomfyRTS somfy(RF433_PIN);
 // A UDP instance to let us send and receive packets over UDP
@@ -39,22 +40,14 @@ void setup_syslog(){
 }
 
 void moveup(int roller) {
-
-  digitalWrite(TX_LED_PIN, HIGH);
+  TXLEDOnfor1s();
   somfy.moveup(roller);
-  delay(500);
-  digitalWrite(TX_LED_PIN, LOW);
-
 }
 
 
 void movedown(int roller) {
-
-  digitalWrite(TX_LED_PIN, HIGH);
-  somfy.movedown(roller);
-  delay(500);
-  digitalWrite(TX_LED_PIN, LOW);
-  
+  TXLEDOnfor1s();
+  somfy.movedown(roller);  
 }
 
 
@@ -69,10 +62,6 @@ void prog(int roller) {
 
 
 void stop(int roller) {
-
-  digitalWrite(TX_LED_PIN, HIGH);
-  somfy.stop(roller);
-  delay(500);
-  digitalWrite(TX_LED_PIN, LOW);
-  
+  TXLEDOnfor1s();
+  somfy.stop(roller);  
 }

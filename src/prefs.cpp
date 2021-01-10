@@ -119,6 +119,30 @@ uint16_t prefs_get_syslog_port() {
   return value;  
 }
 
+
+void prefs_set_ntp_server(String ntp_server) {
+  
+  Serial.println("PREFS - Storing ntp server url");
+  preferences.begin("ntp",false);
+  preferences.putString("ntp_server", ntp_server);
+  preferences.end();
+  
+}
+
+
+void prefs_get_ntp_server(char * ntp_server) {
+  
+  Serial.print("PREFS - Reading ntp server url : ");
+  preferences.begin("ntp",false);
+  preferences.getString("ntp_server").toCharArray(ntp_server, NTP_SERVER_LENGTH);
+  if(ntp_server == NULL || strlen(ntp_server) == 0 || ntp_server[0] == '\0'){
+    String("pool.ntp.org").toCharArray(ntp_server, NTP_SERVER_LENGTH);
+  }
+  Serial.println(ntp_server);
+  preferences.end();
+  
+}
+
 void prefs_set_accesspoint(String accesspoint) {
   
   Serial.println("PREFS - Storing accesspoint");

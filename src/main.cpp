@@ -63,8 +63,6 @@ void setup() {
 }
 
 void loop() {
-  // Handle web requests
-  ws_handle_client();
 
   if (rescue_mode) {
     handle_dns_requests();

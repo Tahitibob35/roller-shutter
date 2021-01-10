@@ -1,16 +1,17 @@
-#include <WiFi.h>
+#include "WiFi.h"
 #include "time.h"
-#include <sys/time.h>
+#include "sys/time.h"
+#include "prefs.h"
 
 
-const char* ntpServer = "pool.ntp.org";
+char ntpServer[NTP_SERVER_LENGTH];
 const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
 bool time_set = false;
 
 
 bool inittime(void) {
-
+  prefs_get_ntp_server(ntpServer);
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
   struct tm timeinfo;

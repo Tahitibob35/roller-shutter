@@ -5,6 +5,7 @@
 #include "prefs.h"
 #include "ESP32Ping.h"
 #include "misc.h"
+#include "pins.h"
 
 IPAddress apIP(10, 10, 10, 1);
 DNSServer dnsServer;
@@ -44,6 +45,7 @@ void connect_to_wifi(void) {
 }
 
 void check_wifi(void){
+  digitalWrite(STATUS_LED_PIN, HIGH);
   int avg_ms = 2000;
   boolean ping_sucess = Ping.ping(IPtoPing, 9);
   avg_ms = Ping.averageTime();
@@ -67,6 +69,7 @@ void check_wifi(void){
     }
     write_output("Connection fails but reconnected :)");
   }
+  digitalWrite(STATUS_LED_PIN, LOW);
 }
 
 void start_softap(void) {

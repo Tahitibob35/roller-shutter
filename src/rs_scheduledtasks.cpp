@@ -12,12 +12,12 @@
 Scheduler runner;
 // Check if a program starts (checked every minute)
 Task programTask(TASK_MINUTE, TASK_FOREVER, &checkTriggerProgram, &runner, false);
-// Check Wifi (every 5mn)
+// Check Wifi (every minute)
 Task checkWifiTask(TASK_MINUTE, TASK_FOREVER, &check_wifi, &runner, false);
 // Do Wifi LED blink (every second)
-Task wifiBlinkTask(1 * TASK_SECOND, TASK_FOREVER, &wifiLEDOn, &runner, false);
+Task wifiBlinkTask(TASK_SECOND, TASK_FOREVER, &wifiLEDOn, &runner, false);
 // TX LED task
-Task TXLEDTask(1 * TASK_SECOND, TASK_FOREVER, &TXLEDOff, &runner, false);
+Task TXLEDTask(TASK_SECOND, TASK_FOREVER, &TXLEDOff, &runner, false);
 
 void checkTriggerProgram(){
 

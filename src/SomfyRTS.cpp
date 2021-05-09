@@ -37,7 +37,7 @@ void SomfyRTS::_buildFrameSomfy() {
   prefs.begin("SomfyRTS", false);
 
   char key[10];
-  snprintf(key, 10, "%lu", _RTS_address);
+  snprintf(key, 10, "%lu", _RTS_address + 2 * _virtualRemoteNumber);
   Code = prefs.getUInt(key);
   Serial.print("SomfyRTS::_buildFrameSomfy - Code read : ");
   Serial.println(Code);
@@ -46,8 +46,8 @@ void SomfyRTS::_buildFrameSomfy() {
   frame[1] = _actionCommand << 4;  // Which button did  you press? The 4 LSB will be the checksum
   frame[2] = Code >> 8;    // Rolling code (big endian)
   frame[3] = Code;         // Rolling code
-  frame[4] = _RTS_address + _virtualRemoteNumber >> 16; // Remote address
-  frame[5] = _RTS_address + _virtualRemoteNumber >>  8; // Remote address
+  frame[4] = (_RTS_address + _virtualRemoteNumber) >> 16; // Remote address
+  frame[5] = (_RTS_address + _virtualRemoteNumber) >>  8; // Remote address
   frame[6] = _RTS_address + _virtualRemoteNumber;     // Remote address
 
   // Checksum calculation: a XOR of all the nibbles
